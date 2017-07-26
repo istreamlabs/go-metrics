@@ -6,6 +6,8 @@
 // development, and testing use cases. Generally you will instantiate one
 // of these clients and then write metrics to it:
 //
+//   import "github.com/istreamlabs/go-metrics/metrics"
+//
 //   client := metrics.NewDataDogClient("127.0.0.1:8125", "myprefix")
 //
 //   // Simple incrementing counter

@@ -239,7 +239,7 @@ func (c *RecorderClient) Fatalf(format string, args ...interface{}) {
 	// blacklist contains a set of fully qualified function name components that
 	// we will filter out to keep the call stack concise.
 	blacklist := []string{
-		"github.com/iStreamPlanet/go-common/metrics.",
+		"github.com/istreamlabs/go-metrics/metrics.",
 		"testing.tRunner",
 		"runtime.goexit",
 	}

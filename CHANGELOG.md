@@ -6,4 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+- Add items here as needed.
+
+## [1.0.0] - 2017-07-26
+
 - Make project public on GitHub.

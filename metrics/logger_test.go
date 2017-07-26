@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/DataDog/datadog-go/statsd"
-	"github.com/istreamlabs/go-metrics"
+	"github.com/istreamlabs/go-metrics/metrics"
 )
 
 // LogRecorder dumps log messages into an array.

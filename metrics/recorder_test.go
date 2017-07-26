@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/DataDog/datadog-go/statsd"
-	"github.com/istreamlabs/go-metrics"
+	"github.com/istreamlabs/go-metrics/metrics"
 )
 
 // ExpectEqual compares two values and fails if they are not deeply equal.
