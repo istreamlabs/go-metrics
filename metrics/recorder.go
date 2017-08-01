@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/DataDog/datadog-go/statsd"
@@ -72,7 +73,8 @@ func stackInfo(info *callInfo) string {
 }
 
 type callInfo struct {
-	Calls []Call
+	Calls   []Call
+	RWMutex sync.RWMutex
 }
 
 // RecorderClient records any metric that is sent, allowing you to make
@@ -166,6 +168,8 @@ func (c *RecorderClient) logCall(name string, value interface{}) {
 	for k, v := range c.tagMap {
 		tagMapCopy[k] = v
 	}
+	c.callInfo.RWMutex.Lock()
+	defer c.callInfo.RWMutex.Unlock()
 	c.callInfo.Calls = append(c.callInfo.Calls, &MetricCall{
 		Name:   name,
 		Value:  toFloat64(value),
@@ -202,6 +206,8 @@ func (c *RecorderClient) Event(e *statsd.Event) {
 	for k, v := range c.tagMap {
 		tagMapCopy[k] = v
 	}
+	c.callInfo.RWMutex.Lock()
+	defer c.callInfo.RWMutex.Unlock()
 	c.callInfo.Calls = append(c.callInfo.Calls, &EventCall{
 		Event:  e,
 		TagMap: tagMapCopy,
@@ -220,12 +226,16 @@ func (c *RecorderClient) Histogram(name string, value float64) {
 
 // Reset will clear the call info context, which is useful between test runs.
 func (c *RecorderClient) Reset() {
+	c.callInfo.RWMutex.Lock()
+	defer c.callInfo.RWMutex.Unlock()
 	c.callInfo.Calls = make([]Call, 0)
 }
 
 // Length returns the number of calls in the call info context. It is a
 // shorthand for `len(recorder.GetCalls())`.
 func (c *RecorderClient) Length() int {
+	c.callInfo.RWMutex.RLock()
+	defer c.callInfo.RWMutex.RUnlock()
 	return len(c.callInfo.Calls)
 }
 
@@ -275,9 +285,22 @@ func (c *RecorderClient) GetCalls() []Call {
 
 // ExpectEmpty asserts that no metrics have been emitted.
 func (c *RecorderClient) ExpectEmpty() {
+	c.callInfo.RWMutex.RLock()
+	defer c.callInfo.RWMutex.RUnlock()
 	if len(c.callInfo.Calls) > 0 {
 		c.Fatalf("Expected empty metrics call stack.")
 	}
+}
+
+// callsCopy creates a shallow copy of the calls list.
+func (c *RecorderClient) callsCopy() []Call {
+	c.callInfo.RWMutex.RLock()
+	defer c.callInfo.RWMutex.RUnlock()
+	calls := make([]Call, len(c.callInfo.Calls))
+	for i := 0; i < len(c.callInfo.Calls); i++ {
+		calls[i] = c.callInfo.Calls[i]
+	}
+	return calls
 }
 
 // Expect finds metrics (by name) or events (by title) and returns the
@@ -291,7 +314,7 @@ func (c *RecorderClient) ExpectEmpty() {
 //   recorder.Expect("my.event")
 func (c *RecorderClient) Expect(id string) Query {
 	return (&query{
-		calls:    c.callInfo.Calls,
+		calls:    c.callsCopy(),
 		test:     c,
 		minCalls: 1,
 		checkMin: true,
@@ -311,7 +334,7 @@ func (c *RecorderClient) Expect(id string) Query {
 // See `Call.String()` for the serialization format.
 func (c *RecorderClient) ExpectContains(component string) Query {
 	return (&query{
-		calls:    c.callInfo.Calls,
+		calls:    c.callsCopy(),
 		test:     c,
 		minCalls: 1,
 		checkMin: true,
@@ -336,7 +359,7 @@ func (c *RecorderClient) ExpectContains(component string) Query {
 //   recorder.If("my.metric").Accept()
 func (c *RecorderClient) If(id string) Query {
 	return (&query{
-		calls:    c.callInfo.Calls,
+		calls:    c.callsCopy(),
 		test:     c,
 		minCalls: 1,
 		checkMin: false,

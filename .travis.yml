@@ -1,11 +1,15 @@
 language: go
 go:
-  - 1.7
-  - 1.8
+- 1.7
+- 1.8
 install:
-  - go get -u github.com/golang/dep/cmd/dep
-  - dep ensure
+- go get -u github.com/golang/dep/cmd/dep
+- dep ensure
 script:
-  - go test -coverprofile=coverage.txt -covermode=atomic -v $(go list ./... | grep -v "/vendor/")
+- go test -coverprofile=coverage.txt -covermode=atomic -v $(go list ./... | grep -v
+  "/vendor/")
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+- bash <(curl -s https://codecov.io/bash)
+notifications:
+  slack:
+    secure: TshyjGtxmMhE15Ilm0/1VSY+MdJz7DynZe6koCFzL5VQAKNWtdJTdzIw2XLsTgLF4r7TE+TRgTvrn5MrglwVsbmYdZfxWEUz/0bx6yBtV6Z+y6WZgLmHL0qG4Fm7yLYiLdBwuke3m/b05xFswDK4Vv4WNrz9u5AJMtCvJlkQpELkEAoPylYIxKtIDfFldZrnHz1aA4fD+o1FupktZxapqMzKL8hQi7CIroy8ytB04R0Y9jUzl/YHwp6dcub+TcC4zCYJS4pTS64DFn6g+yrUMegZO8qNFJKNefxz4LaRdkOSCppCu8cTwHabg16QbPFEveiB29huVoN4RvCx9j+wYlooo8eylZUVZTeiMt+KrCXfyubnrzJTMwHCh3gfcptsfIddad7JrPX7vJijFImDQYiOG8YVn5rAds21aneCZCIK319Bf0l8MPYaeaAVlGvfMk4PGTL2gaWbWGYSB8KL400/+BCj/2uT8hIAfJFdE9mPX5MGFhlnYAYsV5MylTlbImBqRqRit6HECsR5jBccHoNWln3U22je/GFcxnCUCvhxBJBnKk/WPrUAMg8ov2NqGhqxaqim3zIU0rS9bucwHRfQ7f6PX3mFTR1c3Zvgv0VGMlsO+BR+gVZXW8y7+qWoPE5jTwDap5BiQ9U5YDZJEfco8VVyNFdDnYwpp7Np+S0=

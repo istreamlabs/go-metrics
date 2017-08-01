@@ -3,6 +3,7 @@ package metrics_test
 import (
 	"fmt"
 	"reflect"
+	"sync"
 	"testing"
 	"time"
 
@@ -263,4 +264,22 @@ func TestRecorderAssertionRequiresFailer(t *testing.T) {
 	}()
 
 	client.Expect("foo")
+}
+
+func TestRecorderConcurrency(t *testing.T) {
+	client := metrics.NewRecorderClient()
+
+	// Write metrics concurrently, then wait for them to all complete.
+	wg := sync.WaitGroup{}
+	wg.Add(3)
+	for i := 0; i < 3; i++ {
+		go func() {
+			client.Incr("test.concurrency")
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+
+	// Since there are three goroutines above, we should get three metrics.
+	client.Expect("test.concurrency").MinTimes(3)
 }
