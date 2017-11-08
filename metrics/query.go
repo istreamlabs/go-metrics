@@ -34,7 +34,7 @@ type Query interface {
 	Accept()
 
 	// GetCalls returns the currently matching list of calls. The calls may be
-	// cast to `MetricCall` or `EventCall` for futher processing.
+	// cast to `MetricCall` or `EventCall` for further processing.
 	GetCalls() []Call
 
 	// MinTimes sets the minimum number of calls that should be left before

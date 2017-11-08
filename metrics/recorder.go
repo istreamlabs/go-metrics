@@ -351,7 +351,7 @@ func (c *RecorderClient) ExpectContains(component string) Query {
 //   // This will not fail, because the bad tag is not found.
 //   recorder.If("my.metric").Tag("bad", "tag").Reject()
 //
-//   // This will fail becasue the metric is found.
+//   // This will fail because the metric is found.
 //   recorder.If("my.metric").Reject()
 //
 //   // The following are equivalent, but the first is preferred.
