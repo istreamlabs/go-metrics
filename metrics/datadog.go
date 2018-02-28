@@ -67,6 +67,10 @@ func (c *DataDogClient) Gauge(name string, value float64) {
 
 // Event tracks an event that may be relevant to other metrics.
 func (c *DataDogClient) Event(e *statsd.Event) {
+	if len(c.tagMap) > 0 {
+		e.Tags = append(e.Tags, c.tagsList()...)
+	}
+
 	c.client.Event(e)
 }
 
