@@ -63,4 +63,17 @@ func TestDataDogClient(t *testing.T) {
 	if !reflect.DeepEqual(actual, expected) {
 		t.Fatalf("Expected %v to equal %v", actual, expected)
 	}
+
+	// Events should get tags assigned automatically.
+	e := &statsd.Event{
+		Title: "Test event",
+	}
+
+	datadog.WithTags(map[string]string{
+		"tag1": "value1",
+	}).Event(e)
+
+	if !reflect.DeepEqual(e.Tags, []string{"tag1:value1"}) {
+		t.Fatalf("Expected event to have tags '[tag1:value1]'. Found '%v'", e.Tags)
+	}
 }
