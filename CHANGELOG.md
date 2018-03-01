@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Update build to test with Go 1.9, drop support for 1.7 since `dep` now
   requires Go 1.8+. Go 1.7 users can still use this library but must manage
   their own dependencies.
+- Add `WithRate(rate float)` to the DataDog client to limit traffic sent to
+  the `dogstatsd` daemon. The set rate will be applied to all calls made
+  with the returned `Client`.
 
 ## [1.1.0] - 2017-08-01
 
