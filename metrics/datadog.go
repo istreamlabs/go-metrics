@@ -10,6 +10,7 @@ import (
 // DataDogClient is a dogstatsd metrics client implementation.
 type DataDogClient struct {
 	client *statsd.Client
+	rate   float64
 	tagMap map[string]string
 }
 
@@ -29,6 +30,16 @@ func NewDataDogClient(address string, namespace string) *DataDogClient {
 
 	return &DataDogClient{
 		client: c,
+		rate:   1.0,
+	}
+}
+
+// WithRate clones this client with a new sample rate.
+func (c *DataDogClient) WithRate(rate float64) Client {
+	return &DataDogClient{
+		client: c.client,
+		rate:   rate,
+		tagMap: combine(c.tagMap, map[string]string{}),
 	}
 }
 
@@ -37,6 +48,7 @@ func NewDataDogClient(address string, namespace string) *DataDogClient {
 func (c *DataDogClient) WithTags(tags map[string]string) Client {
 	return &DataDogClient{
 		client: c.client,
+		rate:   c.rate,
 		tagMap: combine(c.tagMap, tags),
 	}
 }
@@ -47,7 +59,7 @@ func (c *DataDogClient) tagsList() []string {
 
 // Count adds some integer value to a metric.
 func (c *DataDogClient) Count(name string, value int64) {
-	c.client.Count(name, value, c.tagsList(), 1.0)
+	c.client.Count(name, value, c.tagsList(), c.rate)
 }
 
 // Incr adds one to a metric.
@@ -62,7 +74,7 @@ func (c *DataDogClient) Decr(name string) {
 
 // Gauge sets a numeric value.
 func (c *DataDogClient) Gauge(name string, value float64) {
-	c.client.Gauge(name, value, c.tagsList(), 1.0)
+	c.client.Gauge(name, value, c.tagsList(), c.rate)
 }
 
 // Event tracks an event that may be relevant to other metrics.
@@ -76,10 +88,10 @@ func (c *DataDogClient) Event(e *statsd.Event) {
 
 // Timing tracks a duration.
 func (c *DataDogClient) Timing(name string, value time.Duration) {
-	c.client.Timing(name, value, c.tagsList(), 1)
+	c.client.Timing(name, value, c.tagsList(), c.rate)
 }
 
 // Histogram sets a numeric value while tracking min/max/avg/p95/etc.
 func (c *DataDogClient) Histogram(name string, value float64) {
-	c.client.Histogram(name, value, c.tagsList(), 1.0)
+	c.client.Histogram(name, value, c.tagsList(), c.rate)
 }

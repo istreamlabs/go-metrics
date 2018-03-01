@@ -9,6 +9,10 @@ import (
 	"github.com/istreamlabs/go-metrics/metrics"
 )
 
+type withRater interface {
+	WithRate(rate float64) metrics.Client
+}
+
 func ExampleDataDogClient() {
 	datadog := metrics.NewDataDogClient("127.0.0.1:8125", "myprefix")
 	datadog.WithTags(map[string]string{
@@ -35,6 +39,13 @@ func TestDataDogClient(t *testing.T) {
 	datadog.Decr("one")
 	datadog.Gauge("memory", 1024)
 	datadog.Histogram("histo", 123)
+
+	if rater, ok := datadog.(withRater); ok {
+		ratedClient := rater.WithRate(0.5)
+		ratedClient.Incr("rated")
+	} else {
+		t.Fatalf("Expected DataDog client to support sample rate")
+	}
 
 	// Test that tag overrides work.
 	override := datadog.WithTags(map[string]string{
