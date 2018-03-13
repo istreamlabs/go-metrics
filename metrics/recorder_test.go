@@ -267,7 +267,7 @@ func TestRecorderAssertionRequiresFailer(t *testing.T) {
 }
 
 func TestRecorderConcurrency(t *testing.T) {
-	client := metrics.NewRecorderClient()
+	client := metrics.NewRecorderClient().WithTest(t)
 
 	// Write metrics concurrently, then wait for them to all complete.
 	wg := sync.WaitGroup{}
@@ -282,4 +282,13 @@ func TestRecorderConcurrency(t *testing.T) {
 
 	// Since there are three goroutines above, we should get three metrics.
 	client.Expect("test.concurrency").MinTimes(3)
+}
+
+func TestRecorderWithRate(t *testing.T) {
+	recorder := metrics.NewRecorderClient().WithTest(t)
+
+	recorder.WithRate(0.1).Incr("sampled")
+
+	recorder.If("sampled").Rate(1.0).Reject()
+	recorder.Expect("sampled").Rate(0.1)
 }

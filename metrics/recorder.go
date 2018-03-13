@@ -15,10 +15,11 @@ import (
 // Call describes either a metrics or event call. You can cast it to
 // either `MetricCall` or `EventCall` to get at type-specific fields
 // for custom checks. Conversion to a string results in a serialized
-// representation that looks like one of  the following:
+// representation that looks like one of the following, where the (RATE)
+// field is only shown when not equal to 1.0:
 //
 //   // Serialized metric
-//   NAME:VALUE[TAG_NAME:TAG_VALUE TAG_NAME:TAG_VALUE ...]
+//   NAME:VALUE(RATE)[TAG_NAME:TAG_VALUE TAG_NAME:TAG_VALUE ...]
 //
 //   // Serialized event
 //   TITLE:TEXT[TAG_NAME:TAG_VALUE TAG_NAME:TAG_VALUE ...]
@@ -40,6 +41,7 @@ type TestFailer interface {
 type MetricCall struct {
 	Name   string
 	Value  float64
+	Rate   float64
 	TagMap map[string]string
 }
 
@@ -47,6 +49,10 @@ type MetricCall struct {
 func (m *MetricCall) String() string {
 	tags := mapToStrings(m.TagMap)
 	sort.Strings(tags)
+	if m.Rate != 1.0 {
+		return fmt.Sprintf("%s:%v(%v)%v", m.Name, m.Value, m.Rate, tags)
+	}
+
 	return fmt.Sprintf("%s:%v%v", m.Name, m.Value, tags)
 }
 
@@ -133,6 +139,7 @@ type callInfo struct {
 type RecorderClient struct {
 	callInfo *callInfo
 	test     TestFailer
+	rate     float64
 	tagMap   map[string]string
 }
 
@@ -140,6 +147,7 @@ type RecorderClient struct {
 func NewRecorderClient() *RecorderClient {
 	return &RecorderClient{
 		callInfo: &callInfo{},
+		rate:     1.0,
 	}
 }
 
@@ -149,7 +157,18 @@ func (c *RecorderClient) WithTags(tags map[string]string) Client {
 	return &RecorderClient{
 		callInfo: c.callInfo,
 		test:     c.test,
+		rate:     c.rate,
 		tagMap:   combine(c.tagMap, tags),
+	}
+}
+
+// WithRate clones this client with a new sample rate.
+func (c *RecorderClient) WithRate(rate float64) Client {
+	return &RecorderClient{
+		callInfo: c.callInfo,
+		test:     c.test,
+		rate:     rate,
+		tagMap:   combine(map[string]string{}, c.tagMap),
 	}
 }
 
@@ -158,6 +177,7 @@ func (c *RecorderClient) WithTest(test TestFailer) *RecorderClient {
 	return &RecorderClient{
 		callInfo: c.callInfo,
 		test:     test,
+		rate:     c.rate,
 		tagMap:   c.tagMap,
 	}
 }
@@ -173,6 +193,7 @@ func (c *RecorderClient) logCall(name string, value interface{}) {
 	c.callInfo.Calls = append(c.callInfo.Calls, &MetricCall{
 		Name:   name,
 		Value:  toFloat64(value),
+		Rate:   c.rate,
 		TagMap: tagMapCopy,
 	})
 }

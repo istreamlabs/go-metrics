@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"log"
+	"math/rand"
 	"os"
 	"time"
 
@@ -18,6 +19,7 @@ type InfoLogger interface {
 // locally for testing. Can be used with multiple different logging systems.
 type LoggerClient struct {
 	logger InfoLogger
+	rate   float64
 	tagMap map[string]string
 }
 
@@ -32,6 +34,7 @@ func NewLoggerClient(logger InfoLogger) *LoggerClient {
 
 	return &LoggerClient{
 		logger: logger,
+		rate:   1.0,
 	}
 }
 
@@ -40,13 +43,40 @@ func NewLoggerClient(logger InfoLogger) *LoggerClient {
 func (c *LoggerClient) WithTags(tags map[string]string) Client {
 	return &LoggerClient{
 		logger: c.logger,
+		rate:   c.rate,
 		tagMap: combine(c.tagMap, tags),
+	}
+}
+
+// WithRate clones this client with a given sample rate. Subsequent calls
+// will be limited to logging metrics at this rate.
+func (c *LoggerClient) WithRate(rate float64) Client {
+	return &LoggerClient{
+		logger: c.logger,
+		rate:   rate,
+		tagMap: combine(map[string]string{}, c.tagMap),
+	}
+}
+
+// print out the metric call, taking into account sample rate.
+func (c *LoggerClient) print(t string, name string, value interface{}, sampled interface{}) {
+	if c.rate == 1.0 {
+		c.logger.Printf("%s %s:%v %v", t, name, value, c.tagMap)
+		return
+	}
+
+	if rand.Float64() < c.rate {
+		if value == sampled {
+			c.logger.Printf("%s %s:%v (%v) %v", t, name, value, c.rate, c.tagMap)
+		} else {
+			c.logger.Printf("%s %s:%v (%v * %v) %v", t, name, sampled, value, c.rate, c.tagMap)
+		}
 	}
 }
 
 // Count adds some value to a metric.
 func (c *LoggerClient) Count(name string, value int64) {
-	c.logger.Printf("Count %s:%d %v", name, value, c.tagMap)
+	c.print("Count", name, value, float64(value)*c.rate)
 }
 
 // Incr adds one to a metric.
@@ -61,7 +91,7 @@ func (c *LoggerClient) Decr(name string) {
 
 // Gauge sets a numeric value.
 func (c *LoggerClient) Gauge(name string, value float64) {
-	c.logger.Printf("Gauge %s:%v %v", name, value, c.tagMap)
+	c.print("Gauge", name, value, value)
 }
 
 // Event tracks an event that may be relevant to other metrics.
@@ -71,10 +101,10 @@ func (c *LoggerClient) Event(e *statsd.Event) {
 
 // Timing tracks a duration.
 func (c *LoggerClient) Timing(name string, value time.Duration) {
-	c.logger.Printf("Timing %s:%s %v", name, value, c.tagMap)
+	c.print("Timing", name, value, value)
 }
 
 // Histogram sets a numeric value while tracking min/max/avg/p95/etc.
 func (c *LoggerClient) Histogram(name string, value float64) {
-	c.logger.Printf("Histogram %s:%v %v", name, value, c.tagMap)
+	c.print("Histogram", name, value, value)
 }

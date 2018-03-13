@@ -22,6 +22,11 @@ func (c *NullClient) WithTags(tags map[string]string) Client {
 	return &NullClient{}
 }
 
+// WithRate clones this client with a given sample rate.
+func (c *NullClient) WithRate(rate float64) Client {
+	return &NullClient{}
+}
+
 // Count adds some value to a metric.
 func (c *NullClient) Count(name string, value int64) {
 }

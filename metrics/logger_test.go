@@ -53,4 +53,10 @@ func TestLoggerClient(t *testing.T) {
 	ExpectEqual(t, "Count one:-1 map[]", recorder.messages[3])
 	ExpectEqual(t, "Gauge memory:1024 map[]", recorder.messages[4])
 	ExpectEqual(t, "Histogram histo:123 map[]", recorder.messages[5])
+
+	// Make sure the call works, but since it is randomly sampled we have no
+	// assertion to make.
+	sampled := client.WithRate(0.8)
+	sampled.Incr("sampled")
+	sampled.Incr("sampled")
 }

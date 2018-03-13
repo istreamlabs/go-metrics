@@ -65,6 +65,9 @@ type Query interface {
 	// TagName filters out any metric or event that does not contain a given
 	// tag with name `name`. The value does not matter.
 	TagName(name string) Query
+
+	// Rate filters out any metric that does not have the given sample rate.
+	Rate(rate float64) Query
 }
 
 // query is an implementation of the `Query` interface.
@@ -262,6 +265,26 @@ func (q *query) TagName(name string) Query {
 
 	if q.checkMin && len(q.calls) < q.minCalls {
 		q.fatalf("Expected tag '%s'", name)
+	}
+
+	return q
+}
+
+// Rate expects a value with the given rate to exist.
+func (q *query) Rate(rate float64) Query {
+	q.history = fmt.Sprintf("%s rate(%f)", q.history, rate)
+	q.filter(func(call Call) bool {
+		switch t := call.(type) {
+		case *MetricCall:
+			return t.Rate == rate
+		case *EventCall:
+			return false
+		}
+		return false
+	})
+
+	if q.checkMin && len(q.calls) < q.minCalls {
+		q.fatalf("Expected rate '%f'", rate)
 	}
 
 	return q
