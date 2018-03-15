@@ -59,4 +59,8 @@ func TestLoggerClient(t *testing.T) {
 	sampled := client.WithRate(0.8)
 	sampled.Incr("sampled")
 	sampled.Incr("sampled")
+
+	// Test colorized output
+	client.(*metrics.LoggerClient).Colorized().Incr("colored")
+	ExpectEqual(t, "Count \x1b[38;5;208mcolored\x1b[0m:\x1b[38;5;32m1\x1b[0m map[]", recorder.messages[len(recorder.messages)-1])
 }
