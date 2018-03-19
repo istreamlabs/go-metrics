@@ -1,12 +1,25 @@
 package metrics
 
 import (
+	"fmt"
 	"log"
 	"math/rand"
 	"os"
 	"time"
 
 	"github.com/DataDog/datadog-go/statsd"
+	"github.com/mattn/go-isatty"
+	"github.com/mgutz/ansi"
+)
+
+var (
+	// Colors are from the ANSI 256 color pallette.
+	// https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit
+	cname    = ansi.ColorFunc("208")
+	cvalue   = ansi.ColorFunc("32")
+	crate    = ansi.ColorFunc("106")
+	csampled = ansi.ColorFunc("43")
+	ctag     = ansi.ColorFunc("133")
 )
 
 // InfoLogger provides a method for logging info messages and is implemented
@@ -19,22 +32,46 @@ type InfoLogger interface {
 // locally for testing. Can be used with multiple different logging systems.
 type LoggerClient struct {
 	logger InfoLogger
+	colors bool
 	rate   float64
 	tagMap map[string]string
 }
 
 // NewLoggerClient creates a new logging client. If `logger` is `nil` then it
-// defaults to stdout using the built-in `log` package. It is equivalent to:
+// defaults to stdout using the built-in `log` package. It is equivalent to
+// the following with added auto-detection for colorized output:
 //
 //   metrics.NewLoggerClient(log.New(os.Stdout, "", 0))
+//
+// You can use your own logger and enable colorized output manually via:
+//
+//   metrics.NewLoggerClient(myLog).Colorized()
 func NewLoggerClient(logger InfoLogger) *LoggerClient {
+	colors := false
 	if logger == nil {
 		logger = log.New(os.Stdout, "", 0)
+
+		if isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd()) {
+			colors = true
+		}
 	}
 
-	return &LoggerClient{
+	client := &LoggerClient{
 		logger: logger,
+		colors: colors,
 		rate:   1.0,
+	}
+
+	return client
+}
+
+// Colorized enables colored terminal output.
+func (c *LoggerClient) Colorized() *LoggerClient {
+	return &LoggerClient{
+		logger: c.logger,
+		rate:   c.rate,
+		colors: true,
+		tagMap: combine(map[string]string{}, c.tagMap),
 	}
 }
 
@@ -44,6 +81,7 @@ func (c *LoggerClient) WithTags(tags map[string]string) Client {
 	return &LoggerClient{
 		logger: c.logger,
 		rate:   c.rate,
+		colors: c.colors,
 		tagMap: combine(c.tagMap, tags),
 	}
 }
@@ -54,24 +92,54 @@ func (c *LoggerClient) WithRate(rate float64) Client {
 	return &LoggerClient{
 		logger: c.logger,
 		rate:   rate,
+		colors: c.colors,
 		tagMap: combine(map[string]string{}, c.tagMap),
 	}
 }
 
 // print out the metric call, taking into account sample rate.
 func (c *LoggerClient) print(t string, name string, value interface{}, sampled interface{}) {
+	r := fmt.Sprintf("%v", c.rate)
+	v := value
+	s := sampled
+
+	if c.colors {
+		name = cname(name)
+		r = crate(r)
+		v = cvalue(fmt.Sprintf("%v", value))
+		s = csampled(fmt.Sprintf("%v", sampled))
+	}
+
 	if c.rate == 1.0 {
-		c.logger.Printf("%s %s:%v %v", t, name, value, c.tagMap)
+		c.logger.Printf("%s %s:%v %v", t, name, v, c.getTags())
 		return
 	}
 
 	if rand.Float64() < c.rate {
 		if value == sampled {
-			c.logger.Printf("%s %s:%v (%v) %v", t, name, value, c.rate, c.tagMap)
+			c.logger.Printf("%s %s:%v (%v) %v", t, name, v, r, c.getTags())
 		} else {
-			c.logger.Printf("%s %s:%v (%v * %v) %v", t, name, sampled, value, c.rate, c.tagMap)
+			c.logger.Printf("%s %s:%v (%v * %v) %v", t, name, s, v, r, c.getTags())
 		}
 	}
+}
+
+func (c *LoggerClient) getTags() string {
+	if !c.colors {
+		return fmt.Sprintf("%v", c.tagMap)
+	}
+
+	tags := ""
+
+	for name, value := range c.tagMap {
+		if tags != "" {
+			tags += " "
+		}
+
+		tags += fmt.Sprintf("%s:%s", ctag(name), value)
+	}
+
+	return "map[" + tags + "]"
 }
 
 // Count adds some value to a metric.
