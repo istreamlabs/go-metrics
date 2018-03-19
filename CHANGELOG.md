@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
         recorder.Expect("foo").Rate(0.1).Value(5)
         ```
 - Add `Colorized()` method to `LoggerClient`, and automatically detect a TTY and enable color when `nil` is passed to the `NewLoggerClient` constructor.
+- Test with Go 1.10.x.
 
 ## [1.2.0] - 2018-03-01
 
