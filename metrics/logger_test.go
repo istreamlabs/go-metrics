@@ -59,8 +59,12 @@ func TestLoggerClient(t *testing.T) {
 	sampled := client.WithRate(0.8)
 	sampled.Incr("sampled")
 	sampled.Incr("sampled")
+	sampled.Gauge("sampled-gauge", 123)
 
 	// Test colorized output
-	client.(*metrics.LoggerClient).Colorized().Incr("colored")
-	ExpectEqual(t, "Count \x1b[38;5;208mcolored\x1b[0m:\x1b[38;5;32m1\x1b[0m map[]", recorder.messages[len(recorder.messages)-1])
+	client.(*metrics.LoggerClient).Colorized().WithTags(map[string]string{
+		"tag1": "val1",
+		"tag2": "val2",
+	}).Incr("colored")
+	ExpectEqual(t, "Count \x1b[38;5;208mcolored\x1b[0m:\x1b[38;5;32m1\x1b[0m map[\x1b[38;5;133mtag1\x1b[0m:val1 \x1b[38;5;133mtag2\x1b[0m:val2]", recorder.messages[len(recorder.messages)-1])
 }

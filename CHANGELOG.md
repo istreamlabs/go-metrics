@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- Put unreleased items here.
+
+## [1.3.0] - 2018-03-19
 
 - Add `WithRate(float64)` to the metrics interface and to all clients that implement
   the interface. All metrics calls support sample rates.

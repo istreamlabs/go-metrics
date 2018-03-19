@@ -32,4 +32,6 @@ func TestNullClientMethods(t *testing.T) {
 	client.Timing("timing", time.Duration(123))
 
 	client.Event(&statsd.Event{})
+
+	client.WithRate(1.2).Incr("rated")
 }
