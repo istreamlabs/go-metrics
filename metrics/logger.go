@@ -5,6 +5,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"sort"
 	"time"
 
 	"github.com/DataDog/datadog-go/statsd"
@@ -129,14 +130,19 @@ func (c *LoggerClient) getTags() string {
 		return fmt.Sprintf("%v", c.tagMap)
 	}
 
-	tags := ""
+	keys := make([]string, 0, len(c.tagMap))
+	for k := range c.tagMap {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
 
-	for name, value := range c.tagMap {
+	tags := ""
+	for _, key := range keys {
 		if tags != "" {
 			tags += " "
 		}
 
-		tags += fmt.Sprintf("%s:%s", ctag(name), value)
+		tags += fmt.Sprintf("%s:%s", ctag(key), c.tagMap[key])
 	}
 
 	return "map[" + tags + "]"
