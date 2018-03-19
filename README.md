@@ -49,6 +49,15 @@ client.WithTags(map[string]string{
 
 The above code would result in `myprefix.requests.count` with a value of `1` showing up in DataDog if you have [`dogstatsd`](https://docs.datadoghq.com/guides/dogstatsd/) running locally and an environment variable `env` set to `prod`, otherwise it will print metrics to standard out. See the [`Client`](https://godoc.org/github.com/istreamlabs/go-metrics/metrics/#Client) interface for a list of available metrics methods.
 
+Sometimes you wouldn't want to send a metric every single time a piece of code is executed. This is supported by setting a sample rate:
+
+```go
+// Sample rate for high-throughput applications
+client.WithRate(0.01).Incr("requests.count")
+```
+
+Sample rates apply to metrics but not events. Any count-type metric (`Incr`, `Decr`, `Count`, and timing/histogram counts) will get multiplied to the full value, while gauges are sent unmodified. For example, when emitting a 10% sampled timing metric that takes an average of `200ms` to DataDog, you would see `1 call * (1/0.1 sample rate) = 10 calls` added to the histogram count while the average value remains `200ms` in the DataDog UI.
+
 Also provided are useful clients for testing. For example, the following asserts that a metric with the given name, value, and tag was emitted during a test:
 
 ```go

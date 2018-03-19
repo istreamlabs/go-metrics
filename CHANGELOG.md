@@ -5,8 +5,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- Put unreleased items here.
 
-- Add unreleased items here.
+## [1.3.0] - 2018-03-19
+
+- Add `WithRate(float64)` to the metrics interface and to all clients that implement
+  the interface. All metrics calls support sample rates.
+  - The `LoggerClient`:
+    - Applies the sample rate when printing log messages. If the rate is `0.1` and you call `Incr()` ten times, expect about one message to have been printed out.
+    - Displays the sample rate for counts if it is not `1.0`, e.g: `Count foo:0.2 (2 * 0.1) [tag1 tag2]`. This shows the sampled value, the passed value, and the sample rate.
+    - Gauges, timings, and histograms will show the sample rate, but he value is left unmodified just like the DataDog implementation.
+  - The `RecorderClient`:
+    - Records all sample rates for metrics calls in `MetricCall.Rate`. No calls are excluded from the call list based on the sample rate, and the value recorded is the full value before multiplying by the sample rate.
+    - Adds a `Rate(float64)` query method to filter by sampled metrics.
+    - The following should work:
+
+        ```go
+        recorder := metrics.NewRecorderClient().WithTest(t)
+        recorder.WithRate(0.1).Count("foo", 5)
+        recorder.Expect("foo").Rate(0.1).Value(5)
+        ```
+- Add `Colorized()` method to `LoggerClient`, and automatically detect a TTY and enable color when `nil` is passed to the `NewLoggerClient` constructor.
+- Test with Go 1.10.x.
 
 ## [1.2.0] - 2018-03-01
 

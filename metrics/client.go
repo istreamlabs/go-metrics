@@ -18,6 +18,9 @@
 //     "tag": "value"
 //   }).Incr("requests.count")
 //
+//   // Sample rate for high-throughput applications
+//   client.WithRate(0.01).Incr("requests.count")
+//
 // Also provided are useful clients for testing, both for when you want
 // to assert that certain metrics are emitted and a `NullClient` for when
 // you want to ignore them.
@@ -48,6 +51,9 @@ import (
 type Client interface {
 	// WithTags returns a new client with the given tags.
 	WithTags(tags map[string]string) Client
+
+	// WithRate returns a new client with the given sample rate.
+	WithRate(rate float64) Client
 
 	// Count/Incr/Decr set a numeric integer value.
 	Count(name string, value int64)
