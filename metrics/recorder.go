@@ -265,7 +265,7 @@ func (c *RecorderClient) Length() int {
 // output message to help with debugging.
 func (c *RecorderClient) Fatalf(format string, args ...interface{}) {
 	if c.test == nil {
-		panic("No test associated with metrics recorder")
+		panic("No test associated with metrics recorder, you must call `recorder.WithTest(t)`")
 	}
 	// blacklist contains a set of fully qualified function name components that
 	// we will filter out to keep the call stack concise.
