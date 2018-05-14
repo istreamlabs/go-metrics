@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 - Put unreleased items here.
 
+## [1.3.1] - 2018-05-14
+
+- Add more helpful error message when `WithTest(t)` is not called on the recorder metrics client during testing.
+
 ## [1.3.0] - 2018-03-19
 
 - Add `WithRate(float64)` to the metrics interface and to all clients that implement
