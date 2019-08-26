@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 - Put unreleased items here.
 
+## [1.4.0] - 2019-08-26
+
+- Updated `datadog-go` to version `2.2.0`
+
 ## [1.3.1] - 2018-05-14
 
 - Add more helpful error message when `WithTest(t)` is not called on the recorder metrics client during testing.
