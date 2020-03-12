@@ -1,6 +1,6 @@
 module github.com/istreamlabs/go-metrics
 
-go 1.13
+go 1.12
 
 require (
 	github.com/DataDog/datadog-go v2.3.0+incompatible
