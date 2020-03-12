@@ -57,6 +57,11 @@ func (c *DataDogClient) tagsList() []string {
 	return mapToStrings(c.tagMap)
 }
 
+// Close closes all client connections and flushes any buffered data.
+func (c *DataDogClient) Close() error {
+	return c.client.Close()
+}
+
 // Count adds some integer value to a metric.
 func (c *DataDogClient) Count(name string, value int64) {
 	c.client.Count(name, value, c.tagsList(), c.rate)
@@ -94,4 +99,9 @@ func (c *DataDogClient) Timing(name string, value time.Duration) {
 // Histogram sets a numeric value while tracking min/max/avg/p95/etc.
 func (c *DataDogClient) Histogram(name string, value float64) {
 	c.client.Histogram(name, value, c.tagsList(), c.rate)
+}
+
+// Distribution tracks the statistical distribution of a set of values.
+func (c *DataDogClient) Distribution(name string, value float64) {
+	c.client.Distribution(name, value, c.tagsList(), c.rate)
 }

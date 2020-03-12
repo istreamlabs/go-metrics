@@ -30,8 +30,10 @@ func TestNullClientMethods(t *testing.T) {
 
 	client.Histogram("histo", 1.25)
 	client.Timing("timing", time.Duration(123))
+	client.Distribution("distro", 999)
 
 	client.Event(&statsd.Event{})
 
 	client.WithRate(1.2).Incr("rated")
+	client.Close()
 }

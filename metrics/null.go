@@ -27,6 +27,11 @@ func (c *NullClient) WithRate(rate float64) Client {
 	return &NullClient{}
 }
 
+// Close on a NullClient is a no-op
+func (c *NullClient) Close() error {
+	return nil
+}
+
 // Count adds some value to a metric.
 func (c *NullClient) Count(name string, value int64) {
 }
@@ -53,4 +58,8 @@ func (c *NullClient) Timing(name string, value time.Duration) {
 
 // Histogram sets a numeric value while tracking min/max/avg/p95/etc.
 func (c *NullClient) Histogram(name string, value float64) {
+}
+
+// Distribution tracks the statistical distribution of a set of values.
+func (c *NullClient) Distribution(name string, value float64) {
 }

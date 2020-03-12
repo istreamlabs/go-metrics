@@ -46,6 +46,8 @@ func TestLoggerClient(t *testing.T) {
 	client.Decr("one")
 	client.Gauge("memory", 1024)
 	client.Histogram("histo", 123)
+	client.Distribution("distro", 999)
+	client.Close()
 
 	ExpectEqual(t, "Count one:1 map[]", recorder.messages[0])
 	ExpectEqual(t, "Event title\ndesc map[]", recorder.messages[1])
@@ -53,6 +55,7 @@ func TestLoggerClient(t *testing.T) {
 	ExpectEqual(t, "Count one:-1 map[]", recorder.messages[3])
 	ExpectEqual(t, "Gauge memory:1024 map[]", recorder.messages[4])
 	ExpectEqual(t, "Histogram histo:123 map[]", recorder.messages[5])
+	ExpectEqual(t, "Distribution distro:999 map[]", recorder.messages[6])
 
 	// Make sure the call works, but since it is randomly sampled we have no
 	// assertion to make.

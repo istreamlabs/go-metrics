@@ -70,6 +70,12 @@ type Client interface {
 	// Timing creates a histogram of a duration.
 	Timing(name string, value time.Duration)
 
-	// Historgram creates a numeric floating point metric with min/max/avg/p95/etc
+	// Historgram creates a numeric floating point metric with min/max/avg/p95/etc.
 	Histogram(name string, value float64)
+
+	// Distribution tracks the statistical distribution of a set of values.
+	Distribution(name string, value float64)
+
+	// Close closes all client connections and flushes any buffered data.
+	Close() error
 }

@@ -39,6 +39,7 @@ func TestDataDogClient(t *testing.T) {
 	datadog.Decr("one")
 	datadog.Gauge("memory", 1024)
 	datadog.Histogram("histo", 123)
+	datadog.Distribution("distro", 999)
 
 	if rater, ok := datadog.(withRater); ok {
 		ratedClient := rater.WithRate(0.5)
@@ -76,4 +77,6 @@ func TestDataDogClient(t *testing.T) {
 	if !reflect.DeepEqual(e.Tags, []string{"tag1:value1"}) {
 		t.Fatalf("Expected event to have tags '[tag1:value1]'. Found '%v'", e.Tags)
 	}
+
+	datadog.Close()
 }
