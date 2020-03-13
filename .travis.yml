@@ -1,14 +1,12 @@
 language: go
 go:
-- 1.8
-- 1.9
-- '1.10'
-install:
-- go get -u github.com/golang/dep/cmd/dep
-- dep ensure
+- '1.12'
+- '1.13'
+- '1.14'
+env:
+- GO111MODULE=on
 script:
-- go test -coverprofile=coverage.txt -covermode=atomic -v $(go list ./... | grep -v
-  "/vendor/")
+- go test -coverprofile=coverage.txt -covermode=atomic -v $(go list ./... | grep -v "/vendor/")
 after_success:
 - bash <(curl -s https://codecov.io/bash)
 notifications:
