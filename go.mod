@@ -3,9 +3,10 @@ module github.com/istreamlabs/go-metrics
 go 1.12
 
 require (
-	github.com/DataDog/datadog-go v2.3.0+incompatible
-	github.com/mattn/go-colorable v0.0.9
-	github.com/mattn/go-isatty v0.0.3
+	github.com/DataDog/datadog-go v3.4.1+incompatible
+	github.com/mattn/go-colorable v0.1.6 // indirect
+	github.com/mattn/go-isatty v0.0.12
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b
-	golang.org/x/sys v0.0.0-20180314180151-89ac7f292d17
+	github.com/stretchr/testify v1.5.1 // indirect
+	golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527 // indirect
 )

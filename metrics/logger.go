@@ -148,6 +148,11 @@ func (c *LoggerClient) getTags() string {
 	return "map[" + tags + "]"
 }
 
+// Close on LoggerClient is a no-op
+func (c *LoggerClient) Close() error {
+	return nil
+}
+
 // Count adds some value to a metric.
 func (c *LoggerClient) Count(name string, value int64) {
 	c.print("Count", name, value, float64(value)*c.rate)
@@ -181,4 +186,9 @@ func (c *LoggerClient) Timing(name string, value time.Duration) {
 // Histogram sets a numeric value while tracking min/max/avg/p95/etc.
 func (c *LoggerClient) Histogram(name string, value float64) {
 	c.print("Histogram", name, value, value)
+}
+
+// Distribution tracks the statistical distribution of a set of values.
+func (c *LoggerClient) Distribution(name string, value float64) {
+	c.print("Distribution", name, value, value)
 }

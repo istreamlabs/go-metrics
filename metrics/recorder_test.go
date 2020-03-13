@@ -109,6 +109,7 @@ func TestRecorderClient(t *testing.T) {
 	client.Decr("one")
 	client.Gauge("memory", 1024)
 	client.Histogram("histo", 123)
+	client.Distribution("distro", 999)
 
 	// Cast to access additional methods for testing.
 	recorder := client.(*metrics.RecorderClient)
@@ -121,6 +122,7 @@ func TestRecorderClient(t *testing.T) {
 	recorder.Expect("title").Text("desc")
 	recorder.Expect("histo").Value(4.3)
 	recorder.ExpectContains("two:2[tag1:value1]")
+	recorder.Expect("distro").Value(999)
 	recorder.
 		Expect("three").
 		Tag("tag1", "override").
@@ -128,6 +130,7 @@ func TestRecorderClient(t *testing.T) {
 	recorder.Expect("one").Value(-1)
 	recorder.Expect("memory").Value(1024)
 	recorder.Expect("histo").Value(123)
+	recorder.Expect("distro").Value(999)
 
 	recorder.If("*").Tag("tag1", "override2").Reject()
 
@@ -136,6 +139,8 @@ func TestRecorderClient(t *testing.T) {
 	if recorder.Length() > 0 {
 		t.Fatal("Expected a length of zero after reset")
 	}
+
+	client.Close()
 
 	recorder.Incr("one")
 	recorder.Incr("two")

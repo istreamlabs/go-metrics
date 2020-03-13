@@ -198,6 +198,11 @@ func (c *RecorderClient) logCall(name string, value interface{}) {
 	})
 }
 
+// Close on the RecorderClient is a no-op
+func (c *RecorderClient) Close() error {
+	return nil
+}
+
 // Count adds some value to a metric.
 func (c *RecorderClient) Count(name string, value int64) {
 	// Normally this would be stored as an integer, but instead we assert that
@@ -242,6 +247,11 @@ func (c *RecorderClient) Timing(name string, value time.Duration) {
 
 // Histogram sets a numeric value while tracking min/max/avg/p95/etc.
 func (c *RecorderClient) Histogram(name string, value float64) {
+	c.logCall(name, value)
+}
+
+// Distribution tracks the statistical distribution of a set of values.
+func (c *RecorderClient) Distribution(name string, value float64) {
 	c.logCall(name, value)
 }
 
