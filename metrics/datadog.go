@@ -11,7 +11,7 @@ import (
 type DataDogClient struct {
 	client *statsd.Client
 	rate   float64
-	tagMap map[string]string
+	tags   []string
 }
 
 // NewDataDogClient creates a new dogstatsd client pointing to `address` with
@@ -39,7 +39,7 @@ func (c *DataDogClient) WithRate(rate float64) Client {
 	return &DataDogClient{
 		client: c.client,
 		rate:   rate,
-		tagMap: combine(c.tagMap, map[string]string{}),
+		tags:   c.tags,
 	}
 }
 
@@ -49,12 +49,12 @@ func (c *DataDogClient) WithTags(tags map[string]string) Client {
 	return &DataDogClient{
 		client: c.client,
 		rate:   c.rate,
-		tagMap: combine(c.tagMap, tags),
+		tags:   cloneTags(nil, tags),
 	}
 }
 
 func (c *DataDogClient) tagsList() []string {
-	return mapToStrings(c.tagMap)
+	return c.tags
 }
 
 // Close closes all client connections and flushes any buffered data.
@@ -84,7 +84,7 @@ func (c *DataDogClient) Gauge(name string, value float64) {
 
 // Event tracks an event that may be relevant to other metrics.
 func (c *DataDogClient) Event(e *statsd.Event) {
-	if len(c.tagMap) > 0 {
+	if len(c.tags) > 0 {
 		e.Tags = append(e.Tags, c.tagsList()...)
 	}
 

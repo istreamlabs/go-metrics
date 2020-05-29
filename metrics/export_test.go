@@ -1,6 +1,9 @@
 package metrics
 
-// TagMap returns the internal tag map from a DataDog client instance.
-func (c *DataDogClient) TagMap() map[string]string {
-	return c.tagMap
+import "sort"
+
+// Tags returns the internal tag list from a DataDog client instance.
+func (c *DataDogClient) Tags() []string {
+	sort.Strings(c.tags)
+	return c.tags
 }

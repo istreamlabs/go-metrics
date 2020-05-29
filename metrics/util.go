@@ -25,6 +25,20 @@ func combine(original, override map[string]string) map[string]string {
 	return combined
 }
 
+func cloneTags(original []string, newTags map[string]string) []string {
+	// We know the size must be at least the length of the existing tag map, but
+	// since values can be overridden we cannot assume the length is the sum of
+	// both inputs.
+	combined := make([]string, 0, len(original)+len(newTags))
+	copy(combined, original)
+
+	for k, v := range newTags {
+		combined = append(combined, fmt.Sprintf("%s:%s", k, v))
+	}
+
+	return combined
+}
+
 // Converts a map to an array of strings like `key:value`.
 func mapToStrings(tagMap map[string]string) []string {
 	tags := make([]string, 0, len(tagMap))

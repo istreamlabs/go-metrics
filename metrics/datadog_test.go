@@ -1,6 +1,7 @@
 package metrics_test
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -56,10 +57,10 @@ func TestDataDogClient(t *testing.T) {
 		"tag2": "value2",
 	})
 
-	actual := override.(*metrics.DataDogClient).TagMap()
-	expected := map[string]string{
-		"tag1": "override",
-		"tag2": "value2",
+	actual := override.(*metrics.DataDogClient).Tags()
+	expected := []string{
+		"tag1:override",
+		"tag2:value2",
 	}
 	if !reflect.DeepEqual(actual, expected) {
 		t.Fatalf("Expected %v to equal %v", actual, expected)
@@ -79,4 +80,58 @@ func TestDataDogClient(t *testing.T) {
 	}
 
 	datadog.Close()
+}
+
+func BenchmarkNoTags_10(b *testing.B) {
+	benchmarkClient(b, 0, 10, false)
+}
+
+func BenchmarkTags5_10(b *testing.B) {
+	benchmarkClient(b, 5, 10, false)
+}
+
+func BenchmarkTags5_10_inline(b *testing.B) {
+	benchmarkClient(b, 5, 10, true)
+}
+
+func BenchmarkNoTags_100(b *testing.B) {
+	benchmarkClient(b, 0, 100, false)
+}
+
+func BenchmarkNoTags_100_inline(b *testing.B) {
+	benchmarkClient(b, 0, 100, true)
+}
+
+func BenchmarkTags5_100(b *testing.B) {
+	benchmarkClient(b, 5, 100, false)
+}
+
+func BenchmarkTags5_100_inline(b *testing.B) {
+	benchmarkClient(b, 5, 100, true)
+}
+
+func benchmarkClient(b *testing.B, numTags, numMetrics int, inlineTags bool) {
+	var datadog metrics.Client
+	datadog = metrics.NewDataDogClient("127.0.0.1:8126", "testing")
+	defer datadog.Close()
+
+	tags := map[string]string{}
+	for i := 0; i < numTags; i++ {
+		tags[fmt.Sprintf("tag-%v", i)] = fmt.Sprintf("value-%v", i)
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		cli := datadog.WithTags(tags)
+		for m := 0; m < numMetrics; m++ {
+			cli.Timing("two", 2*time.Second)
+			cli.Gauge("memory", 1024)
+			if inlineTags {
+				cli.WithTags(map[string]string{"a": "b"}).Histogram("histo", 123)
+			} else {
+				cli.Histogram("histo", 123)
+			}
+		}
+	}
 }
