@@ -82,32 +82,32 @@ func TestDataDogClient(t *testing.T) {
 	datadog.Close()
 }
 
-func BenchmarkNoTags_10(b *testing.B) {
-	benchmarkClient(b, 0, 10, false)
-}
-
-func BenchmarkTags5_10(b *testing.B) {
-	benchmarkClient(b, 5, 10, false)
-}
-
-func BenchmarkTags5_10_inline(b *testing.B) {
-	benchmarkClient(b, 5, 10, true)
-}
-
-func BenchmarkNoTags_100(b *testing.B) {
+func Benchmark_0Tags_100Emits(b *testing.B) {
 	benchmarkClient(b, 0, 100, false)
 }
 
-func BenchmarkNoTags_100_inline(b *testing.B) {
-	benchmarkClient(b, 0, 100, true)
-}
-
-func BenchmarkTags5_100(b *testing.B) {
+func BenchmarkTags_5Tags_100Emits(b *testing.B) {
 	benchmarkClient(b, 5, 100, false)
 }
 
-func BenchmarkTags5_100_inline(b *testing.B) {
+func BenchmarkTags_5Tags_100Emits_WithInline(b *testing.B) {
 	benchmarkClient(b, 5, 100, true)
+}
+
+func BenchmarkTags_10Tags_1000Emits(b *testing.B) {
+	benchmarkClient(b, 10, 1000, false)
+}
+
+func BenchmarkTags_10Tags_1000Emits_WithInline(b *testing.B) {
+	benchmarkClient(b, 10, 1000, true)
+}
+
+func BenchmarkTags_15Tags_100Emits(b *testing.B) {
+	benchmarkClient(b, 15, 100, false)
+}
+
+func BenchmarkTags_15Tags_100Emits_WithInline(b *testing.B) {
+	benchmarkClient(b, 15, 100, true)
 }
 
 func benchmarkClient(b *testing.B, numTags, numMetrics int, inlineTags bool) {
@@ -125,8 +125,6 @@ func benchmarkClient(b *testing.B, numTags, numMetrics int, inlineTags bool) {
 	for i := 0; i < b.N; i++ {
 		cli := datadog.WithTags(tags)
 		for m := 0; m < numMetrics; m++ {
-			cli.Timing("two", 2*time.Second)
-			cli.Gauge("memory", 1024)
 			if inlineTags {
 				cli.WithTags(map[string]string{"a": "b"}).Histogram("histo", 123)
 			} else {

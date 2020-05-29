@@ -39,7 +39,7 @@ func (c *DataDogClient) WithRate(rate float64) Client {
 	return &DataDogClient{
 		client: c.client,
 		rate:   rate,
-		tags:   c.tags,
+		tags:   c.tags, // clone not be necessary since original slice is immutable
 	}
 }
 
@@ -49,12 +49,8 @@ func (c *DataDogClient) WithTags(tags map[string]string) Client {
 	return &DataDogClient{
 		client: c.client,
 		rate:   c.rate,
-		tags:   cloneTags(nil, tags),
+		tags:   cloneTagsWithMap(nil, tags),
 	}
-}
-
-func (c *DataDogClient) tagsList() []string {
-	return c.tags
 }
 
 // Close closes all client connections and flushes any buffered data.
@@ -64,7 +60,7 @@ func (c *DataDogClient) Close() error {
 
 // Count adds some integer value to a metric.
 func (c *DataDogClient) Count(name string, value int64) {
-	c.client.Count(name, value, c.tagsList(), c.rate)
+	c.client.Count(name, value, c.tags, c.rate)
 }
 
 // Incr adds one to a metric.
@@ -79,13 +75,13 @@ func (c *DataDogClient) Decr(name string) {
 
 // Gauge sets a numeric value.
 func (c *DataDogClient) Gauge(name string, value float64) {
-	c.client.Gauge(name, value, c.tagsList(), c.rate)
+	c.client.Gauge(name, value, c.tags, c.rate)
 }
 
 // Event tracks an event that may be relevant to other metrics.
 func (c *DataDogClient) Event(e *statsd.Event) {
 	if len(c.tags) > 0 {
-		e.Tags = append(e.Tags, c.tagsList()...)
+		e.Tags = append(e.Tags, c.tags...)
 	}
 
 	c.client.Event(e)
@@ -93,15 +89,15 @@ func (c *DataDogClient) Event(e *statsd.Event) {
 
 // Timing tracks a duration.
 func (c *DataDogClient) Timing(name string, value time.Duration) {
-	c.client.Timing(name, value, c.tagsList(), c.rate)
+	c.client.Timing(name, value, c.tags, c.rate)
 }
 
 // Histogram sets a numeric value while tracking min/max/avg/p95/etc.
 func (c *DataDogClient) Histogram(name string, value float64) {
-	c.client.Histogram(name, value, c.tagsList(), c.rate)
+	c.client.Histogram(name, value, c.tags, c.rate)
 }
 
 // Distribution tracks the statistical distribution of a set of values.
 func (c *DataDogClient) Distribution(name string, value float64) {
-	c.client.Distribution(name, value, c.tagsList(), c.rate)
+	c.client.Distribution(name, value, c.tags, c.rate)
 }

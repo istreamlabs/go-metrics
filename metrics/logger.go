@@ -72,7 +72,7 @@ func (c *LoggerClient) Colorized() *LoggerClient {
 		logger: c.logger,
 		rate:   c.rate,
 		colors: true,
-		tagMap: combine(map[string]string{}, c.tagMap),
+		tagMap: c.tagMap,
 	}
 }
 
@@ -94,7 +94,7 @@ func (c *LoggerClient) WithRate(rate float64) Client {
 		logger: c.logger,
 		rate:   rate,
 		colors: c.colors,
-		tagMap: combine(map[string]string{}, c.tagMap),
+		tagMap: c.tagMap,
 	}
 }
 

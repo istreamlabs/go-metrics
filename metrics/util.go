@@ -25,10 +25,8 @@ func combine(original, override map[string]string) map[string]string {
 	return combined
 }
 
-func cloneTags(original []string, newTags map[string]string) []string {
-	// We know the size must be at least the length of the existing tag map, but
-	// since values can be overridden we cannot assume the length is the sum of
-	// both inputs.
+// cloneTagsWithMap clones the original string slice and appends the new tags in the map
+func cloneTagsWithMap(original []string, newTags map[string]string) []string {
 	combined := make([]string, 0, len(original)+len(newTags))
 	copy(combined, original)
 
