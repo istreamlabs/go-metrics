@@ -37,6 +37,7 @@ if os.Getenv("env") == "prod" {
   // Log to standard out instead of sending production metrics.
   client = metrics.NewLoggerClient(nil)
 }
+defer client.Close()
 
 // Simple incrementing counter
 client.Incr("requests.count")
