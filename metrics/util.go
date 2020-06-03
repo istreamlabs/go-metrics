@@ -27,11 +27,13 @@ func combine(original, override map[string]string) map[string]string {
 
 // cloneTagsWithMap clones the original string slice and appends the new tags in the map
 func cloneTagsWithMap(original []string, newTags map[string]string) []string {
-	combined := make([]string, 0, len(original)+len(newTags))
+	combined := make([]string, len(original)+len(newTags))
 	copy(combined, original)
 
+	i := len(original)
 	for k, v := range newTags {
-		combined = append(combined, fmt.Sprintf("%s:%s", k, v))
+		combined[i] = fmt.Sprintf("%s:%s", k, v)
+		i++
 	}
 
 	return combined

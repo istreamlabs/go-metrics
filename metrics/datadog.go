@@ -49,7 +49,7 @@ func (c *DataDogClient) WithTags(tags map[string]string) Client {
 	return &DataDogClient{
 		client: c.client,
 		rate:   c.rate,
-		tags:   cloneTagsWithMap(nil, tags),
+		tags:   cloneTagsWithMap(c.tags, tags),
 	}
 }
 

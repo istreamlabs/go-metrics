@@ -52,15 +52,18 @@ func TestDataDogClient(t *testing.T) {
 	// Test that tag overrides work.
 	override := datadog.WithTags(map[string]string{
 		"tag1": "value1",
+		"tag2": "value2",
 	}).WithTags(map[string]string{
 		"tag1": "override",
-		"tag2": "value2",
+		"tag3": "value3",
 	})
 
 	actual := override.(*metrics.DataDogClient).Tags()
 	expected := []string{
 		"tag1:override",
+		"tag1:value1",
 		"tag2:value2",
+		"tag3:value3",
 	}
 	if !reflect.DeepEqual(actual, expected) {
 		t.Fatalf("Expected %v to equal %v", actual, expected)
