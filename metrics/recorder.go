@@ -168,7 +168,7 @@ func (c *RecorderClient) WithRate(rate float64) Client {
 		callInfo: c.callInfo,
 		test:     c.test,
 		rate:     rate,
-		tagMap:   combine(map[string]string{}, c.tagMap),
+		tagMap:   c.tagMap,
 	}
 }
 

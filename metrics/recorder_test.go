@@ -13,6 +13,7 @@ import (
 
 // ExpectEqual compares two values and fails if they are not deeply equal.
 func ExpectEqual(t *testing.T, expected, actual interface{}) {
+	t.Helper()
 	if !reflect.DeepEqual(actual, expected) {
 		t.Fatalf("Expected '%s' to be '%s'", actual, expected)
 	}

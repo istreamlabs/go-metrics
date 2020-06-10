@@ -25,6 +25,20 @@ func combine(original, override map[string]string) map[string]string {
 	return combined
 }
 
+// cloneTagsWithMap clones the original string slice and appends the new tags in the map
+func cloneTagsWithMap(original []string, newTags map[string]string) []string {
+	combined := make([]string, len(original)+len(newTags))
+	copy(combined, original)
+
+	i := len(original)
+	for k, v := range newTags {
+		combined[i] = fmt.Sprintf("%s:%s", k, v)
+		i++
+	}
+
+	return combined
+}
+
 // Converts a map to an array of strings like `key:value`.
 func mapToStrings(tagMap map[string]string) []string {
 	tags := make([]string, 0, len(tagMap))

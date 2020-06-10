@@ -1,6 +1,7 @@
 package metrics_test
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -51,15 +52,18 @@ func TestDataDogClient(t *testing.T) {
 	// Test that tag overrides work.
 	override := datadog.WithTags(map[string]string{
 		"tag1": "value1",
+		"tag2": "value2",
 	}).WithTags(map[string]string{
 		"tag1": "override",
-		"tag2": "value2",
+		"tag3": "value3",
 	})
 
-	actual := override.(*metrics.DataDogClient).TagMap()
-	expected := map[string]string{
-		"tag1": "override",
-		"tag2": "value2",
+	actual := override.(*metrics.DataDogClient).Tags()
+	expected := []string{
+		"tag1:override",
+		"tag1:value1",
+		"tag2:value2",
+		"tag3:value3",
 	}
 	if !reflect.DeepEqual(actual, expected) {
 		t.Fatalf("Expected %v to equal %v", actual, expected)
@@ -79,4 +83,56 @@ func TestDataDogClient(t *testing.T) {
 	}
 
 	datadog.Close()
+}
+
+func Benchmark_0Tags_100Emits(b *testing.B) {
+	benchmarkClient(b, 0, 100, false)
+}
+
+func BenchmarkTags_5Tags_100Emits(b *testing.B) {
+	benchmarkClient(b, 5, 100, false)
+}
+
+func BenchmarkTags_5Tags_100Emits_WithInline(b *testing.B) {
+	benchmarkClient(b, 5, 100, true)
+}
+
+func BenchmarkTags_10Tags_1000Emits(b *testing.B) {
+	benchmarkClient(b, 10, 1000, false)
+}
+
+func BenchmarkTags_10Tags_1000Emits_WithInline(b *testing.B) {
+	benchmarkClient(b, 10, 1000, true)
+}
+
+func BenchmarkTags_15Tags_100Emits(b *testing.B) {
+	benchmarkClient(b, 15, 100, false)
+}
+
+func BenchmarkTags_15Tags_100Emits_WithInline(b *testing.B) {
+	benchmarkClient(b, 15, 100, true)
+}
+
+func benchmarkClient(b *testing.B, numTags, numMetrics int, inlineTags bool) {
+	var datadog metrics.Client
+	datadog = metrics.NewDataDogClient("127.0.0.1:8126", "testing")
+	defer datadog.Close()
+
+	tags := map[string]string{}
+	for i := 0; i < numTags; i++ {
+		tags[fmt.Sprintf("tag-%v", i)] = fmt.Sprintf("value-%v", i)
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		cli := datadog.WithTags(tags)
+		for m := 0; m < numMetrics; m++ {
+			if inlineTags {
+				cli.WithTags(map[string]string{"a": "b"}).Histogram("histo", 123)
+			} else {
+				cli.Histogram("histo", 123)
+			}
+		}
+	}
 }
