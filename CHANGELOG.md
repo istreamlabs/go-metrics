@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 - Put unreleased items here.
 
-## [2.0.0] - 2020-05-28
+## [1.5.0] - 2020-05-28
 
 - Go module support
 - Go 1.12-1.14 support
