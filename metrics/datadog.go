@@ -39,7 +39,7 @@ func (c *DataDogClient) WithRate(rate float64) Client {
 	return &DataDogClient{
 		client: c.client,
 		rate:   rate,
-		tags:   c.tags, // clone not be necessary since original slice is immutable
+		tags:   c.tags, // clone isn't necessary since original slice is immutable
 	}
 }
 
