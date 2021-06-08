@@ -53,6 +53,20 @@ func (c *DataDogClient) WithTags(tags map[string]string) Client {
 	}
 }
 
+// WithoutTelemetry clones this client with telemetry stats turned off. Underlying
+// DataDog statsd client only supports turning off telemetry, which is on by default.
+func (c *DataDogClient) WithoutTelemetry() Client {
+	s, err := statsd.CloneWithExtraOptions(c.client, statsd.WithoutTelemetry())
+	if err != nil {
+		log.Panic(err)
+	}
+	return &DataDogClient{
+		client: s,
+		rate:   c.rate,
+		tags:   c.tags, // clone isn't necessary since original slice is immutable
+	}
+}
+
 // Close closes all client connections and flushes any buffered data.
 func (c *DataDogClient) Close() error {
 	return c.client.Close()
