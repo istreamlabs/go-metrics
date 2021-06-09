@@ -42,7 +42,7 @@ func ExpectFailure(t metrics.TestFailer, msg string, handler func(*metrics.Recor
 }
 
 func ExampleRecorderClient() {
-	recorder := metrics.NewRecorderClient().WithoutTelemetry()
+	recorder := metrics.NewRecorderClient()
 	recorder.WithTags(map[string]string{
 		"tag1": "value1",
 		"tag2": "value2",

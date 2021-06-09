@@ -9,7 +9,7 @@ import (
 )
 
 func ExampleNullClient() {
-	client := metrics.NewNullClient().WithoutTelemetry()
+	client := metrics.NewNullClient()
 	client.WithTags(map[string]string{
 		"tag1": "value1",
 		"tag2": "value2",

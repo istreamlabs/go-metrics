@@ -49,11 +49,6 @@ import (
 
 // Client provides a generic interface to log metrics and events
 type Client interface {
-
-	// WithoutTelemetry clones this client with telemetry stats turned off. Underlying
-	// DataDog statsd client only supports turning off telemetry, which is on by default.
-	WithoutTelemetry() Client
-
 	// WithTags returns a new client with the given tags.
 	WithTags(tags map[string]string) Client
 

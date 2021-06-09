@@ -21,7 +21,7 @@ func (l *LogRecorder) Printf(format string, args ...interface{}) {
 }
 
 func ExampleLoggerClient() {
-	client := metrics.NewLoggerClient(nil).WithoutTelemetry()
+	client := metrics.NewLoggerClient(nil)
 	client.WithTags(map[string]string{
 		"tag1": "value1",
 	}).Incr("requests.count")

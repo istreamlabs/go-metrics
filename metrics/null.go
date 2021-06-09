@@ -16,12 +16,6 @@ func NewNullClient() *NullClient {
 	return &NullClient{}
 }
 
-// WithoutTelemetry clones this client with telemetry stats turned off. Underlying
-// DataDog statsd client only supports turning off telemetry, which is on by default.
-func (c *NullClient) WithoutTelemetry() Client {
-	return &NullClient{}
-}
-
 // WithTags clones this client with additional tags. Duplicate tags overwrite
 // the existing value.
 func (c *NullClient) WithTags(tags map[string]string) Client {

@@ -151,12 +151,6 @@ func NewRecorderClient() *RecorderClient {
 	}
 }
 
-// WithoutTelemetry clones this client with telemetry stats turned off. Underlying
-// DataDog statsd client only supports turning off telemetry, which is on by default.
-func (c *RecorderClient) WithoutTelemetry() Client {
-	return c
-}
-
 // WithTags clones this client with additional tags. Duplicate tags overwrite
 // the existing value.
 func (c *RecorderClient) WithTags(tags map[string]string) Client {

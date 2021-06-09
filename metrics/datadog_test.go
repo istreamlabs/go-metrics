@@ -15,7 +15,7 @@ type withRater interface {
 }
 
 func ExampleDataDogClient() {
-	datadog := metrics.NewDataDogClient("127.0.0.1:8125", "myprefix").WithoutTelemetry()
+	datadog := metrics.NewDataDogClient("127.0.0.1:8125", "myprefix")
 	datadog.WithTags(map[string]string{
 		"tag": "value",
 	}).Incr("requests.count")
@@ -27,7 +27,7 @@ func TestDataDogClient(t *testing.T) {
 	// ensures is that the functions can be called without crashing.
 	// TODO: In the future, we should use a statsd mock here.
 	var datadog metrics.Client
-	datadog = metrics.NewDataDogClient("127.0.0.1:8126", "testing")
+	datadog = metrics.NewDataDogClient("127.0.0.1:8126", "testing").WithoutTelemetry()
 
 	datadog.Incr("one")
 	datadog.Event(statsd.NewEvent("title", "desc"))
