@@ -76,6 +76,12 @@ func (c *LoggerClient) Colorized() *LoggerClient {
 	}
 }
 
+// WithoutTelemetry clones this client with telemetry stats turned off. Underlying
+// DataDog statsd client only supports turning off telemetry, which is on by default.
+func (c *LoggerClient) WithoutTelemetry() Client {
+	return c
+}
+
 // WithTags clones this client with additional tags. Duplicate tags overwrite
 // the existing value.
 func (c *LoggerClient) WithTags(tags map[string]string) Client {
