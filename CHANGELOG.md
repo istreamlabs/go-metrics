@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-- Adds WithTelemetry option to Client to support turning on sending telemetry metrics which are now off be default.
+- Adds WithoutTelemetry option to Client to support turning off sending telemetry metrics.
 
 ## [2.0.0] - 2020-05-28
 
