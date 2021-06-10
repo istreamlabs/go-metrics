@@ -16,23 +16,23 @@ type DataDogClient struct {
 
 // Options contains the configuration options for a client.
 type Options struct {
-	WithTelemetry bool
+	WithoutTelemetry bool
 }
 
 // Option is a client option. Can return an error if validation fails.
 type Option func(*Options) error
 
 // WithTelemetry enables telemetry metrics.
-func WithTelemetry() Option {
+func WithoutTelemetry() Option {
 	return func(o *Options) error {
-		o.WithTelemetry = true
+		o.WithoutTelemetry = true
 		return nil
 	}
 }
 
 func resolveOptions(options []Option) (*Options, error) {
 	o := &Options{
-		WithTelemetry: false,
+		WithoutTelemetry: false,
 	}
 
 	for _, option := range options {
@@ -55,11 +55,10 @@ func NewDataDogClient(address string, namespace string, options ...Option) *Data
 	}
 
 	var c *statsd.Client
-	if o.WithTelemetry {
-		c, err = statsd.New(address)
-	} else {
+	if o.WithoutTelemetry {
 		c, err = statsd.New(address, statsd.WithoutTelemetry())
-
+	} else {
+		c, err = statsd.New(address)
 	}
 	if err != nil {
 		log.Panic(err)
