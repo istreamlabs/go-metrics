@@ -14,12 +14,53 @@ type DataDogClient struct {
 	tags   []string
 }
 
+// Options contains the configuration options for a client.
+type Options struct {
+	WithTelemetry bool
+}
+
+// Option is a client option. Can return an error if validation fails.
+type Option func(*Options) error
+
+// WithTelemetry enables telemetry metrics.
+func WithTelemetry() Option {
+	return func(o *Options) error {
+		o.WithTelemetry = true
+		return nil
+	}
+}
+
+func resolveOptions(options []Option) (*Options, error) {
+	o := &Options{
+		WithTelemetry: false,
+	}
+
+	for _, option := range options {
+		err := option(o)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return o, nil
+}
+
 // NewDataDogClient creates a new dogstatsd client pointing to `address` with
 // the metrics prefix of `namespace`. For example, given a namespace of
 // `foo.bar`, a call to `Incr('baz')` would emit a metric with the full name
 // `foo.bar.baz` (note the period between the namespace and metric name).
-func NewDataDogClient(address string, namespace string) *DataDogClient {
-	c, err := statsd.New(address)
+func NewDataDogClient(address string, namespace string, options ...Option) *DataDogClient {
+	o, err := resolveOptions(options)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	var c *statsd.Client
+	if o.WithTelemetry {
+		c, err = statsd.New(address)
+	} else {
+		c, err = statsd.New(address, statsd.WithoutTelemetry())
+
+	}
 	if err != nil {
 		log.Panic(err)
 	}
