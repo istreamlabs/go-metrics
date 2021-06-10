@@ -14,12 +14,52 @@ type DataDogClient struct {
 	tags   []string
 }
 
+// Options contains the configuration options for a client.
+type Options struct {
+	WithoutTelemetry bool
+}
+
+// Option is a client option. Can return an error if validation fails.
+type Option func(*Options) error
+
+// WithTelemetry enables telemetry metrics.
+func WithoutTelemetry() Option {
+	return func(o *Options) error {
+		o.WithoutTelemetry = true
+		return nil
+	}
+}
+
+func resolveOptions(options []Option) (*Options, error) {
+	o := &Options{
+		WithoutTelemetry: false,
+	}
+
+	for _, option := range options {
+		err := option(o)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return o, nil
+}
+
 // NewDataDogClient creates a new dogstatsd client pointing to `address` with
 // the metrics prefix of `namespace`. For example, given a namespace of
 // `foo.bar`, a call to `Incr('baz')` would emit a metric with the full name
 // `foo.bar.baz` (note the period between the namespace and metric name).
-func NewDataDogClient(address string, namespace string) *DataDogClient {
-	c, err := statsd.New(address)
+func NewDataDogClient(address string, namespace string, options ...Option) *DataDogClient {
+	o, err := resolveOptions(options)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	var c *statsd.Client
+	if o.WithoutTelemetry {
+		c, err = statsd.New(address, statsd.WithoutTelemetry())
+	} else {
+		c, err = statsd.New(address)
+	}
 	if err != nil {
 		log.Panic(err)
 	}
@@ -50,6 +90,20 @@ func (c *DataDogClient) WithTags(tags map[string]string) Client {
 		client: c.client,
 		rate:   c.rate,
 		tags:   cloneTagsWithMap(c.tags, tags),
+	}
+}
+
+// WithoutTelemetry clones this client with telemetry stats turned off. Underlying
+// DataDog statsd client only supports turning off telemetry, which is on by default.
+func (c *DataDogClient) WithoutTelemetry() Client {
+	s, err := statsd.CloneWithExtraOptions(c.client, statsd.WithoutTelemetry())
+	if err != nil {
+		log.Panic(err)
+	}
+	return &DataDogClient{
+		client: s,
+		rate:   c.rate,
+		tags:   c.tags, // clone isn't necessary since original slice is immutable
 	}
 }
 
