@@ -22,7 +22,7 @@ type Options struct {
 // Option is a client option. Can return an error if validation fails.
 type Option func(*Options) error
 
-// WithTelemetry enables telemetry metrics.
+// WithoutTelemetry turns off senting DataDog telemetry metrics.
 func WithoutTelemetry() Option {
 	return func(o *Options) error {
 		o.WithoutTelemetry = true
