@@ -32,7 +32,7 @@ func cloneTagsWithMap(original []string, newTags map[string]string) []string {
 
 	i := len(original)
 	for k, v := range newTags {
-		combined[i] = fmt.Sprintf("%s:%s", k, v)
+		combined[i] = buildTag(k, v)
 		i++
 	}
 
@@ -44,10 +44,19 @@ func mapToStrings(tagMap map[string]string) []string {
 	tags := make([]string, 0, len(tagMap))
 
 	for k, v := range tagMap {
-		tags = append(tags, fmt.Sprintf("%s:%s", k, v))
+		tags = append(tags, buildTag(k, v))
 	}
 
 	return tags
+}
+
+func buildTag(k, v string) string {
+	var b strings.Builder
+	b.Grow(len(k) + len(v) + 1)
+	b.WriteString(k)
+	b.WriteByte(':')
+	b.WriteString(v)
+	return b.String()
 }
 
 // convertType converts a value into an specific type if possible, otherwise
