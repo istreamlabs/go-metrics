@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/DataDog/datadog-go/statsd"
+	"github.com/mgutz/ansi"
+
 	"github.com/istreamlabs/go-metrics/metrics"
 )
 
@@ -69,5 +71,12 @@ func TestLoggerClient(t *testing.T) {
 		"tag1": "val1",
 		"tag2": "val2",
 	}).Incr("colored")
-	ExpectEqual(t, "Count \x1b[38;5;208mcolored\x1b[0m:\x1b[38;5;32m1\x1b[0m map[\x1b[38;5;133mtag1\x1b[0m:val1 \x1b[38;5;133mtag2\x1b[0m:val2]", recorder.messages[len(recorder.messages)-1])
+
+	expected := fmt.Sprintf("Count %v:%v map[%v:val1 %v:val2]",
+		ansi.Color("colored", "208"),
+		ansi.Color("1", "32"),
+		ansi.Color("tag1", "133"),
+		ansi.Color("tag2", "133"))
+
+	ExpectEqual(t, expected, recorder.messages[len(recorder.messages)-1])
 }
