@@ -5,9 +5,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-- Adds WithoutTelemetry option to Client to support turning off sending telemetry metrics.
 
-## [2.0.0] - 2020-05-28
+## [1.7.0] - 2021-07-27
+
+- Optimize tag serialization
+- Bump datadog-go dependency versions
+
+## [1.6.0] - 2021-06-10
+
+- Add support for WithoutTelemetry option to configure DataDogClient to not send DD telemetry metrics.
+
+## [1.5.0] - 2020-05-28
 
 - Go module support
 - Go 1.12-1.14 support
