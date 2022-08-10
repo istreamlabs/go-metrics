@@ -151,6 +151,25 @@ func TestRecorderClient(t *testing.T) {
 	}
 }
 
+func TestEventWithClientTags(t *testing.T) {
+	var client metrics.Client
+	client = metrics.NewRecorderClient().WithTest(t).WithTags(map[string]string{
+		"tag1": "hello",
+		"tag2": "kitty",
+	})
+	client.Event(statsd.NewEvent("title", "desc"))
+
+	// Cast to access additional methods for testing.
+	recorder := client.(*metrics.RecorderClient)
+	if recorder.Length() < 1 {
+		t.Fatal("Expected a length of at least 1")
+	}
+
+	recorder.Expect("title").Text("desc")
+	recorder.ExpectContains("title:desc[tag1:hello tag2:kitty]")
+	client.Close()
+}
+
 func TestRecorderAssertionNameFails(t *testing.T) {
 	ExpectFailure(t, "Expecting wrong name should fail test",
 		func(recorder *metrics.RecorderClient) {
