@@ -228,7 +228,7 @@ func (c *RecorderClient) Gauge(name string, value float64) {
 
 // Event tracks an event that may be relevant to other metrics.
 func (c *RecorderClient) Event(e *statsd.Event) {
-	var tagMapCopy map[string]string
+	tagMapCopy := make(map[string]string, len(c.tagMap))
 	for k, v := range c.tagMap {
 		tagMapCopy[k] = v
 	}
