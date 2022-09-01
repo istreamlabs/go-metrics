@@ -44,7 +44,7 @@ package metrics
 import (
 	"time"
 
-	"github.com/DataDog/datadog-go/statsd"
+	"github.com/DataDog/datadog-go/v5/statsd"
 )
 
 // Client provides a generic interface to log metrics and events

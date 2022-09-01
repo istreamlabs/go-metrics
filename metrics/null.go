@@ -3,7 +3,7 @@ package metrics
 import (
 	"time"
 
-	"github.com/DataDog/datadog-go/statsd"
+	"github.com/DataDog/datadog-go/v5/statsd"
 )
 
 // NullClient does nothing. Useful for tests when you do not care about metrics

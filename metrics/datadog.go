@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/DataDog/datadog-go/statsd"
+	"github.com/DataDog/datadog-go/v5/statsd"
 )
 
 // DataDogClient is a dogstatsd metrics client implementation.
@@ -54,18 +54,17 @@ func NewDataDogClient(address string, namespace string, options ...Option) *Data
 		log.Panic(err)
 	}
 
-	var c *statsd.Client
+	var opts []statsd.Option
 	if o.WithoutTelemetry {
-		c, err = statsd.New(address, statsd.WithoutTelemetry())
-	} else {
-		c, err = statsd.New(address)
+		opts = append(opts, statsd.WithoutTelemetry())
 	}
-	if err != nil {
-		log.Panic(err)
+	if namespace != "" {
+		opts = append(opts, statsd.WithNamespace(namespace))
 	}
 
-	if namespace != "" {
-		c.Namespace = namespace + "."
+	c, err := statsd.New(address, opts...)
+	if err != nil {
+		log.Panic(err)
 	}
 
 	return &DataDogClient{
