@@ -15,8 +15,19 @@ type withRater interface {
 }
 
 func ExampleDataDogClient() {
+	// Create a new DataDog metrics client.
 	datadog := metrics.NewDataDogClient("127.0.0.1:8125", "myprefix")
 	datadog.WithTags(map[string]string{
+		"tag": "value",
+	}).Incr("requests.count")
+
+	// Create a DataDog metrics client with a custom configured statsd.
+	client, err := statsd.New("127.0.0.1:8125", statsd.WithNamespace("myprefix"))
+	if err != nil {
+		panic(err)
+	}
+	custom := metrics.NewDataDogClient("", "", metrics.WithStatsd(client))
+	custom.WithTags(map[string]string{
 		"tag": "value",
 	}).Incr("requests.count")
 }
@@ -26,8 +37,7 @@ func TestDataDogClient(t *testing.T) {
 	// stats essentially go into `/dev/null`. Right now the only thing this
 	// ensures is that the functions can be called without crashing.
 	// TODO: In the future, we should use a statsd mock here.
-	var datadog metrics.Client
-	datadog = metrics.NewDataDogClient("127.0.0.1:8126", "testing", metrics.WithoutTelemetry())
+	var datadog metrics.Client = metrics.NewDataDogClient("127.0.0.1:8126", "testing", metrics.WithoutTelemetry())
 
 	datadog.Incr("one")
 	datadog.Event(statsd.NewEvent("title", "desc"))
@@ -85,37 +95,67 @@ func TestDataDogClient(t *testing.T) {
 	datadog.Close()
 }
 
+func TestDataDogCustom(t *testing.T) {
+	client, err := statsd.New("127.0.0.1:8125", statsd.WithNamespace("myprefix"))
+	if err != nil {
+		panic(err)
+	}
+	// This should pass without error even though no address is passed in because
+	// the client we created above does have an address.
+	custom := metrics.NewDataDogClient("", "", metrics.WithStatsd(client))
+	custom.WithTags(map[string]string{
+		"tag": "value",
+	}).Incr("requests.count")
+	custom.Close()
+}
+
 func Benchmark_0Tags_100Emits(b *testing.B) {
-	benchmarkClient(b, 0, 100, false)
+	benchmarkClient(b, 0, 100, true, false, nil)
 }
 
 func BenchmarkTags_5Tags_100Emits(b *testing.B) {
-	benchmarkClient(b, 5, 100, false)
+	benchmarkClient(b, 5, 100, true, false, nil)
 }
 
 func BenchmarkTags_5Tags_100Emits_WithInline(b *testing.B) {
-	benchmarkClient(b, 5, 100, true)
+	benchmarkClient(b, 5, 100, true, true, nil)
 }
 
 func BenchmarkTags_10Tags_1000Emits(b *testing.B) {
-	benchmarkClient(b, 10, 1000, false)
+	benchmarkClient(b, 10, 1000, true, false, nil)
 }
 
 func BenchmarkTags_10Tags_1000Emits_WithInline(b *testing.B) {
-	benchmarkClient(b, 10, 1000, true)
+	benchmarkClient(b, 10, 1000, true, true, nil)
 }
 
 func BenchmarkTags_15Tags_100Emits(b *testing.B) {
-	benchmarkClient(b, 15, 100, false)
+	benchmarkClient(b, 15, 100, true, false, nil)
 }
 
 func BenchmarkTags_15Tags_100Emits_WithInline(b *testing.B) {
-	benchmarkClient(b, 15, 100, true)
+	benchmarkClient(b, 15, 100, true, true, nil)
 }
 
-func benchmarkClient(b *testing.B, numTags, numMetrics int, inlineTags bool) {
-	var datadog metrics.Client
-	datadog = metrics.NewDataDogClient("127.0.0.1:8126", "testing")
+func BenchmarkTags_15Tags_1000Emits_Incr(b *testing.B) {
+	benchmarkClient(b, 15, 1000, false, false, nil)
+}
+
+func BenchmarkTags_15Tags_1000Emits_Incr_WithInline(b *testing.B) {
+	benchmarkClient(b, 15, 1000, false, true, nil)
+}
+
+func BenchmarkTags_15Tags_1000Emits_Incr_NoAggr(b *testing.B) {
+	client, _ := statsd.New("127.0.0.1:8126", statsd.WithoutClientSideAggregation())
+	benchmarkClient(b, 15, 1000, false, false, client)
+}
+
+func benchmarkClient(b *testing.B, numTags, numMetrics int, histo bool, inlineTags bool, client *statsd.Client) {
+	options := []metrics.Option{}
+	if client != nil {
+		options = append(options, metrics.WithStatsd(client))
+	}
+	var datadog metrics.Client = metrics.NewDataDogClient("127.0.0.1:8126", "testing", options...)
 	defer datadog.Close()
 
 	tags := map[string]string{}
@@ -128,10 +168,18 @@ func benchmarkClient(b *testing.B, numTags, numMetrics int, inlineTags bool) {
 	for i := 0; i < b.N; i++ {
 		cli := datadog.WithTags(tags)
 		for m := 0; m < numMetrics; m++ {
-			if inlineTags {
-				cli.WithTags(map[string]string{"a": "b"}).Histogram("histo", 123)
+			if histo {
+				if inlineTags {
+					cli.WithTags(map[string]string{"a": "b"}).Histogram("histo", 123)
+				} else {
+					cli.Histogram("histo", 123)
+				}
 			} else {
-				cli.Histogram("histo", 123)
+				if inlineTags {
+					cli.WithTags(map[string]string{"a": "b"}).Incr("incr")
+				} else {
+					cli.Incr("incr")
+				}
 			}
 		}
 	}
