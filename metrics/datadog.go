@@ -31,6 +31,9 @@ func WithoutTelemetry() Option {
 	}
 }
 
+// WithStatsd sets a custom configured statsd client. This lets you set any
+// options that aren't directly supported by the metrics package. When used,
+// this ignores the address and namespace arguments to NewDataDogClient.
 func WithStatsd(s *statsd.Client) Option {
 	return func(o *Options) error {
 		o.Statsd = s
